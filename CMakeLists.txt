@@ -78,6 +78,16 @@ file(GLOB_RECURSE CXX_SRCS
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
     "${CMAKE_CURRENT_SOURCE_DIR}/utils/*.cpp"
 )
+
+# utils/smooth_ui_toolkit 是从别的工程整包拷进来的第三方库，本工程没有引用它
+# （include/View.h 里那行 include 是注释掉的），属于死代码。
+# 它的 graphic.cpp / math.cpp 用了依赖目录层级数的相对 include
+# （../../../../utils/smooth_ui_toolkit/src/core/types/types.h）：
+# Makefile 侧靠 -I$(PROJECT_DIR)/utils + 恰好四层 ../../.. 落到仓库根才成立，
+# CMake 的包含路径集合下必然 fatal error: No such file or directory。
+# 既然没人用，直接从源文件列表里剔除，两个构建系统都不再编译这份死代码。
+list(FILTER C_SRCS   EXCLUDE REGEX "/utils/smooth_ui_toolkit/")
+list(FILTER CXX_SRCS EXCLUDE REGEX "/utils/smooth_ui_toolkit/")
 set(MAIN_SRC "${CMAKE_CURRENT_SOURCE_DIR}/main.cpp")
 
 set(ALL_SRCS
